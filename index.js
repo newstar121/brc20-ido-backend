@@ -11,9 +11,14 @@ const router = express.Router()
 const authRouter = express.Router()
 const jwt = require("jsonwebtoken")
 const dotenv = require('dotenv')
+const fs = require('fs');
 
 dotenv.config()
 const presale_account_address = process.env.PRESALE_ACCOUNT_ADDRESS
+const MIN = parseFloat(process.env.MIN)
+const MAX = parseFloat(process.env.MAX)
+
+let database = [];
 
 app.use(express.static(__dirname));
 app.use(cors());
@@ -55,20 +60,93 @@ router.get("/getAccountAddress", (req, res) => {
     );
 });
 
-authRouter.post("/buyTokens", (req, res) => {
+authRouter.post("/checkAccount", (req, res) => {
     const address = req.body.address;
     const bitcoin = req.body.bitcoin;
-    const brc20 = req.body.brc20;
-    
+    const brc20 = parseFloat(req.body.brc20);
+    const balance = req.body.balance;
 
-    return res.status(200).send({ response: presale_account_address });
+    if (balance && balance.confirmed < bitcoin * Math.pow(10, 8)) {
+        return res.status(201).json({
+            success: false,
+            msg: "You don't have enough bitcoin"
+        });
+    }
+
+    if (brc20 < MIN) {
+        return res.status(201).json({
+            success: false,
+            msg: "You have to purchase brc20 tokens more than " + MIN
+        });
+    }
+
+    let accountIndex = database.findIndex((accountInfo) => accountInfo.address == address)
+    if (accountIndex > -1 && (brc20 + database[accountIndex].brc20 > MAX) || brc20 > MAX) {
+        if (brc20 + database[accountIndex].brc20 > MAX) {
+            return res.status(201).json({
+                success: false,
+                msg: "You can't purchase brc20 tokens more than " + MAX
+            });
+        }
+    }
+
+    if (accountIndex > -1) {
+        database[accountIndex].brc20 += brc20
+        database[accountIndex].bitcoin += bitcoin
+    } else {
+        database.push({
+            address: address,
+            brc20: brc20,
+            bitcoin: bitcoin,
+        })
+    }
+
+    try {
+        fs.writeFileSync('./database.json', JSON.stringify(database))
+    } catch (error) {
+        console.log('error in writing database file', error)
+    }
+
+    return res.json({
+        success: true,
+        msg: 'Success'
+    });
+
 });
+
+authRouter.post("/setTxid", (req, res) => {
+    const address = req.body.address;
+    const txid = req.body.txid;
+
+    let accountIndex = database.findIndex((accountInfo) => accountInfo.address == address);
+    if (accountIndex > -1 && txid) {
+        database[accountIndex].txid = txid;
+        return res.json({
+            success: true,
+            msg: 'Success. Please until presale is finished'
+        });
+    } else {
+        delete database[accountIndex]
+        return res.json({
+            success: false,
+            msg: 'Failed, Try again'
+        });
+    }
+})
 
 app.use("/api/auth", passport.authenticate('jwt', { session: false }), authRouter)
 app.use("/api", router)
 
 app.listen(port, () => {
     console.log(`connected on port ${port}`);
+
+    try {
+        let rawData = fs.readFileSync('./database.json');
+        database = rawData ? JSON.parse(rawData) : [];
+    } catch (error) {
+        console.log('error in reading database file', error)
+    }
+
 });
 
 module.exports = app;
