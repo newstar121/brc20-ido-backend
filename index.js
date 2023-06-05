@@ -17,6 +17,7 @@ dotenv.config()
 const presale_account_address = process.env.PRESALE_ACCOUNT_ADDRESS
 const MIN = parseFloat(process.env.MIN)
 const MAX = parseFloat(process.env.MAX)
+const PRESALE_TIME = process.env.PRESALE_TIME
 
 let database = [];
 
@@ -58,6 +59,21 @@ router.get("/getAccountAddress", (req, res) => {
             }
         }
     );
+});
+
+router.get("/getPresaleTime", (req, res) => {
+    let currentTs = (new Date()).getTime();
+    if (PRESALE_TIME <= currentTs) {
+        res.json({
+            success: false,
+            msg: 'Presale ended'
+        });
+    } else {
+        res.json({
+            success: true,
+            timestamp: (PRESALE_TIME - currentTs)
+        });
+    }
 });
 
 authRouter.post("/checkAccount", (req, res) => {
@@ -139,7 +155,9 @@ app.use("/api", router)
 
 app.listen(port, () => {
     console.log(`connected on port ${port}`);
-
+    const todayTs = (new Date()).getTime();
+    const tomorrowTs = todayTs + 24 * 60 * 60 * 1000;
+    console.log('tomorrow timestamp', tomorrowTs);
     try {
         let rawData = fs.readFileSync('./database.json');
         database = rawData ? JSON.parse(rawData) : [];
