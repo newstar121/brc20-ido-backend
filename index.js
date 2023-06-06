@@ -20,7 +20,7 @@ const MAX = parseFloat(process.env.MAX)
 const PRESALE_TIME = process.env.PRESALE_TIME
 
 let database = [];
-
+let basicData;
 app.use(express.static(__dirname));
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
@@ -76,10 +76,59 @@ router.get("/getPresaleTime", (req, res) => {
     }
 });
 
+router.get("/getData", (req, res) => {
+    let address = req.query.address;
+    try {
+        let data = {
+            total: 0,
+            contributor: 0,
+            raisingPercentage: 0,
+            funds: 0,
+            inverstment: 0,
+            received: 0,
+            ratio: 0,
+            max: 0,
+            min: 0,
+        }
+
+        database.forEach((item) => {
+            data.total += item.bitcoin;
+        });
+
+        data.contributor = database.length;
+        
+        data.funds = basicData.funds;
+        
+        data.raisingPercentage = (data.total / data.funds * 100).toFixed(2) || 0;
+        
+        let accountIndex = database.findIndex((accountInfo) => accountInfo.address == address)
+        data.inverstment = accountIndex > -1 ? database[accountIndex].bitcoin || 0 : 0;
+
+        data.received = accountIndex > -1 ? database[accountIndex].brc20 || 0 : 0;
+        
+        data.ratio = basicData.ratio;
+
+        data.min = basicData.min;
+
+        data.max = basicData.max;
+
+        res.json({
+            success: true,
+            data: data 
+        });
+    } catch(error) {
+        res.json({
+            success: false,
+            msg: 'Getting data failed'
+        });
+        console.log('getData error', error)
+    }
+});
+
 authRouter.post("/checkAccount", (req, res) => {
     const address = req.body.address;
-    const bitcoin = req.body.bitcoin;
-    const brc20 = parseFloat(req.body.brc20);
+    const bitcoin = parseFloat(req.body.bitcoin);
+    // const brc20 = parseFloat(req.body.brc20);
     const balance = req.body.balance;
 
     if (balance && balance.confirmed < bitcoin * Math.pow(10, 8)) {
@@ -89,26 +138,27 @@ authRouter.post("/checkAccount", (req, res) => {
         });
     }
 
-    if (brc20 < MIN) {
+    if (bitcoin < basicData.min) {
         return res.status(201).json({
             success: false,
-            msg: "You have to purchase brc20 tokens more than " + MIN
+            msg: "You have to pay more"
         });
     }
 
     let accountIndex = database.findIndex((accountInfo) => accountInfo.address == address)
-    if (accountIndex > -1 && (brc20 + database[accountIndex].brc20 > MAX) || brc20 > MAX) {
-        if (brc20 + database[accountIndex].brc20 > MAX) {
+    if (accountIndex > -1 && (bitcoin + database[accountIndex].bitcoin > basicData.max) || bitcoin > basicData.max) {
+        if (bitcoin + parseFloat(database[accountIndex].bitcoin) > MAX) {
             return res.status(201).json({
                 success: false,
-                msg: "You can't purchase brc20 tokens more than " + MAX
+                msg: "You can't purchase brc20 tokens more"
             });
         }
     }
 
+    let brc20 = bitcoin / basicData.ratio;
     if (accountIndex > -1) {
         database[accountIndex].brc20 += brc20
-        database[accountIndex].bitcoin += bitcoin
+        database[accountIndex].bitcoin = parseFloat(database[accountIndex].bitcoin) + bitcoin
     } else {
         database.push({
             address: address,
@@ -118,17 +168,41 @@ authRouter.post("/checkAccount", (req, res) => {
     }
 
     try {
-        fs.writeFileSync('./database.json', JSON.stringify(database))
+        fs.writeFile('./database.json', JSON.stringify(database), () => {
+            return res.json({
+                success: true,
+                msg: 'Success'
+            });
+        })
     } catch (error) {
         console.log('error in writing database file', error)
+        console.log('unsaved data', data)
+        return res.json({
+            success: false,
+            msg: 'Failed'
+        });
     }
 
-    return res.json({
-        success: true,
-        msg: 'Success'
-    });
-
 });
+
+authRouter.post("/reverseTx", (req, res) => {
+    const address = req.body.address;
+    const bitcoin = parseFloat(req.body.bitcoin);
+
+    let accountIndex = database.findIndex((accountInfo) => accountInfo.address == address);
+    if (accountIndex > -1) {
+        database[accountIndex].bitcoin = parseFloat(database[accountIndex].bitcoin) - bitcoin;
+        if(database[accountIndex].bitcoin < 0) database[accountIndex].bitcoin = 0;
+        return res.json({
+            success: true
+        });
+    } else {
+        return res.json({
+            success: false,
+            msg: 'Failed, Try again'
+        });
+    }
+})
 
 authRouter.post("/setTxid", (req, res) => {
     const address = req.body.address;
@@ -161,6 +235,19 @@ app.listen(port, () => {
     try {
         let rawData = fs.readFileSync('./database.json');
         database = rawData ? JSON.parse(rawData) : [];
+        
+        let defaultBasicData = {
+            funds: 7.5,
+            min: 0.0001,
+            max: 0.0003,
+            ratio: 0.0001
+        }
+        // write basic data to file
+        // fs.writeFileSync('./basicData.json', JSON.stringify(defaultBasicData))
+
+        let rawBasicData = fs.readFileSync('./basicData.json');
+        basicData = rawBasicData ? JSON.parse(rawBasicData) : defaultBasicData;
+
     } catch (error) {
         console.log('error in reading database file', error)
     }
