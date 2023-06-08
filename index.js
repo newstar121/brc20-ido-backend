@@ -15,8 +15,6 @@ const fs = require('fs');
 
 dotenv.config()
 const presale_account_address = process.env.PRESALE_ACCOUNT_ADDRESS
-const MIN = parseFloat(process.env.MIN)
-const MAX = parseFloat(process.env.MAX)
 const PRESALE_TIME = process.env.PRESALE_TIME
 
 let database = [];
@@ -80,11 +78,11 @@ router.get("/getData", (req, res) => {
     let address = req.query.address;
     try {
         let data = {
-            total: 0,
+            total: 0.0,
             contributor: 0,
             raisingPercentage: 0,
             funds: 0,
-            inverstment: 0,
+            investment: 0,
             received: 0,
             ratio: 0,
             max: 0,
@@ -92,9 +90,9 @@ router.get("/getData", (req, res) => {
         }
 
         database.forEach((item) => {
-            data.total += item.bitcoin;
+            data.total += (item.bitcoin) * Math.pow(10, 6);
         });
-
+        data.total /= Math.pow(10, 6);
         data.contributor = database.length;
         
         data.funds = basicData.funds;
@@ -102,7 +100,7 @@ router.get("/getData", (req, res) => {
         data.raisingPercentage = (data.total / data.funds * 100).toFixed(2) || 0;
         
         let accountIndex = database.findIndex((accountInfo) => accountInfo.address == address)
-        data.inverstment = accountIndex > -1 ? database[accountIndex].bitcoin || 0 : 0;
+        data.investment = accountIndex > -1 ? database[accountIndex].bitcoin || 0 : 0;
 
         data.received = accountIndex > -1 ? database[accountIndex].brc20 || 0 : 0;
         
@@ -147,7 +145,7 @@ authRouter.post("/checkAccount", (req, res) => {
 
     let accountIndex = database.findIndex((accountInfo) => accountInfo.address == address)
     if (accountIndex > -1 && (bitcoin + database[accountIndex].bitcoin > basicData.max) || bitcoin > basicData.max) {
-        if (bitcoin + parseFloat(database[accountIndex].bitcoin) > MAX) {
+        if (bitcoin + (database[accountIndex].bitcoin) > basicData.max) {
             return res.status(201).json({
                 success: false,
                 msg: "You can't purchase brc20 tokens more"
