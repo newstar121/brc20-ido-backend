@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = 5005;
+const port = 5055;
 const cors = require("cors");
 const passport = require("passport")
 const passportJWT = require("passport-jwt");
@@ -12,7 +12,7 @@ const authRouter = express.Router()
 const jwt = require("jsonwebtoken")
 const dotenv = require('dotenv')
 const fs = require('fs');
-
+// const path = require('path')
 dotenv.config()
 const presale_account_address = process.env.PRESALE_ACCOUNT_ADDRESS
 const PRESALE_TIME = process.env.PRESALE_TIME
@@ -25,6 +25,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(passport.initialize());
+
+// app.get("/", (req, res) => {
+//     res.sendFile(path.join(__dirname, "build", "index.html"));
+// });
+// app.use(express.static("build"));
 
 passport.use(new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
@@ -94,16 +99,16 @@ router.get("/getData", (req, res) => {
         });
         data.total /= Math.pow(10, 6);
         data.contributor = database.length;
-        
+
         data.funds = basicData.funds;
-        
+
         data.raisingPercentage = (data.total / data.funds * 100).toFixed(2) || 0;
-        
+
         let accountIndex = database.findIndex((accountInfo) => accountInfo.address == address)
         data.investment = accountIndex > -1 ? database[accountIndex].bitcoin || 0 : 0;
 
         data.received = accountIndex > -1 ? database[accountIndex].brc20 || 0 : 0;
-        
+
         data.ratio = basicData.ratio;
 
         data.min = basicData.min;
@@ -112,9 +117,9 @@ router.get("/getData", (req, res) => {
 
         res.json({
             success: true,
-            data: data 
+            data: data
         });
-    } catch(error) {
+    } catch (error) {
         res.json({
             success: false,
             msg: 'Getting data failed'
@@ -190,7 +195,7 @@ authRouter.post("/reverseTx", (req, res) => {
     let accountIndex = database.findIndex((accountInfo) => accountInfo.address == address);
     if (accountIndex > -1) {
         database[accountIndex].bitcoin = parseFloat(database[accountIndex].bitcoin) - bitcoin;
-        if(database[accountIndex].bitcoin < 0) database[accountIndex].bitcoin = 0;
+        if (database[accountIndex].bitcoin < 0) database[accountIndex].bitcoin = 0;
         return res.json({
             success: true
         });
@@ -233,7 +238,7 @@ app.listen(port, () => {
     try {
         let rawData = fs.readFileSync('./database.json');
         database = rawData ? JSON.parse(rawData) : [];
-        
+
         let defaultBasicData = {
             funds: 7.5,
             min: 0.0001,
