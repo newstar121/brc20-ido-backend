@@ -29,16 +29,14 @@ app.use(express.json());
 
 app.use(passport.initialize());
 
-// app.get("/", (req, res) => {
-//     res.sendFile(path.join(__dirname, "build", "index.html"));
-// });
+
 app.use(express.static("build"));
 
 passport.use(new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
     secretOrKey: keys.secretOrKey
 }, (jwtPayload, cb) => {
-    if(jwtPayload.address) {
+    if (jwtPayload.address) {
         return cb(null, jwtPayload.address)
     } else {
         return cb(null, jwtPayload.username)
@@ -292,7 +290,7 @@ authRouter.post("/setTxid", (req, res) => {
     }
 })
 
-adminRouter.post("/save", (req, res) => {
+adminRouter.post("/save", passport.authenticate('jwt', { session: false }), (req, res) => {
 
     basicData.presale_start_time = req.body.startDate;
     basicData.presale_end_time = req.body.endDate;
@@ -316,7 +314,7 @@ adminRouter.post("/save", (req, res) => {
     }
 })
 
-adminRouter.post("/add", (req, res) => {
+adminRouter.post("/add", passport.authenticate('jwt', { session: false }), (req, res) => {
 
     const code = req.body.code || '';
     const address = req.body.address || '';
@@ -355,15 +353,15 @@ adminRouter.post("/add", (req, res) => {
     }
 })
 
-adminRouter.post("/delete", (req, res) => {
+adminRouter.post("/delete", passport.authenticate('jwt', { session: false }), (req, res) => {
 
     const address = req.body.address || '';
-    
+
     let findIndex = database.findIndex((item) => item.address == address)
-    
+
     if (findIndex > -1) {
         database.splice(findIndex, 1);
-    } 
+    }
     try {
         fs.writeFileSync('./database.json', JSON.stringify(database))
         return res.json({
@@ -379,9 +377,14 @@ adminRouter.post("/delete", (req, res) => {
     }
 })
 
-app.use("/api/auth", passport.authenticate('jwt', { session: false }), authRouter)
-app.use("/api/admin", passport.authenticate('jwt', { session: false }), adminRouter)
+router.use('/auth', authRouter)
+router.use('/admin', adminRouter)
 app.use("/api", router)
+
+app.get('*', function(req, res) {
+    res.sendFile('index.html', {root: path.join(__dirname, 'build')});
+  });
+
 
 app.listen(port, () => {
     console.log(`connected on port ${port}`);
