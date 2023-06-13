@@ -1,0 +1,66 @@
+[debug] [2023-06-13T12:08:02.312Z] ----------------------------------------------------------------------
+[debug] [2023-06-13T12:08:02.314Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\NewStar\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2023-06-13T12:08:02.314Z] CLI Version:   12.2.1
+[debug] [2023-06-13T12:08:02.315Z] Platform:      win32
+[debug] [2023-06-13T12:08:02.315Z] Node Version:  v16.15.1
+[debug] [2023-06-13T12:08:02.316Z] Time:          Tue Jun 13 2023 05:08:02 GMT-0700 (Pacific Daylight Time)
+[debug] [2023-06-13T12:08:02.316Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-06-13T12:08:02.392Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-06-13T12:08:02.392Z] > authorizing via signed-in user (bg.newstar121@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  D:\Work\Blockchain\Bitcoin\brc20-ido-backend
+
+Before we get started, keep in mind:
+
+  * You are initializing within an existing Firebase project directory
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2023-06-13T12:08:49.739Z] Using project from CLI flag: brc20-presale
+[debug] [2023-06-13T12:08:49.740Z] > refreshing access token with scopes: []
+[debug] [2023-06-13T12:08:49.743Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2023-06-13T12:08:49.743Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2023-06-13T12:08:50.673Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2023-06-13T12:08:50.673Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2023-06-13T12:08:50.760Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/brc20-presale [none]
+[debug] [2023-06-13T12:08:52.249Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/brc20-presale 200
+[debug] [2023-06-13T12:08:52.250Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/brc20-presale {"projectId":"brc20-presale","projectNumber":"829711693660","displayName":"BRC20-PRESALE","name":"projects/brc20-presale","resources":{"hostingSite":"brc20-presale"},"state":"ACTIVE","etag":"1_4b4372c8-e49f-4960-ad61-09ed8f11cdc0"}
+[info] i  Using project brc20-presale (BRC20-PRESALE) 
+[info] 
+=== Functions Setup
+[debug] [2023-06-13T12:08:52.314Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-06-13T12:08:52.315Z] > authorizing via signed-in user (bg.newstar121@gmail.com)
+[debug] [2023-06-13T12:08:52.316Z] [iam] checking project brc20-presale for permissions ["firebase.projects.get"]
+[debug] [2023-06-13T12:08:52.317Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/brc20-presale:testIamPermissions [none]
+[debug] [2023-06-13T12:08:52.318Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/brc20-presale:testIamPermissions x-goog-quota-user=projects/brc20-presale
+[debug] [2023-06-13T12:08:52.318Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/brc20-presale:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2023-06-13T12:08:54.081Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/brc20-presale:testIamPermissions 200
+[debug] [2023-06-13T12:08:54.082Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/brc20-presale:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2023-06-13T12:08:54.084Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com [none]
+[debug] [2023-06-13T12:08:54.084Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/brc20-presale
+[debug] [2023-06-13T12:08:54.088Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/runtimeconfig.googleapis.com [none]
+[debug] [2023-06-13T12:08:54.089Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/brc20-presale
+[debug] [2023-06-13T12:08:56.178Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com 200
+[debug] [2023-06-13T12:08:56.179Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2023-06-13T12:08:56.180Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com:enable [none]
+[debug] [2023-06-13T12:08:56.181Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com:enable x-goog-quota-user=projects/brc20-presale
+[debug] [2023-06-13T12:08:56.213Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/runtimeconfig.googleapis.com 200
+[debug] [2023-06-13T12:08:56.214Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2023-06-13T12:08:58.632Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com:enable 200
+[debug] [2023-06-13T12:08:58.633Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com:enable [omitted]
+[debug] [2023-06-13T12:09:08.636Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com [none]
+[debug] [2023-06-13T12:09:08.637Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/brc20-presale/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/brc20-presale
