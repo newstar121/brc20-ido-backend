@@ -292,8 +292,8 @@ authRouter.post("/setTxid", (req, res) => {
 
 adminRouter.post("/save", passport.authenticate('jwt', { session: false }), (req, res) => {
 
-    basicData.presale_start_time = new Date(req.body.startDate).getTime();
-    basicData.presale_end_time = new Date(req.body.endDate).getTime();
+    basicData.presale_start_time = (new Date(req.body.startDate)).getTime();
+    basicData.presale_end_time = (new Date(req.body.endDate)).getTime();
     basicData.funds = req.body.funds ? parseFloat(req.body.funds) : 0;
     basicData.min = req.body.min ? parseFloat(req.body.min) : 0;
     basicData.max = req.body.max ? parseFloat(req.body.max) : 0;
