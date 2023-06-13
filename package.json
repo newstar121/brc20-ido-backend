@@ -10,6 +10,6 @@
     "passport-jwt": "^4.0.1"
   },
   "scripts": {
-    "start": "npx pm2 start ./index.js"
+    "start": "node index.js"
   }
 }
