@@ -403,7 +403,8 @@ app.listen(port, () => {
 
         let rawBasicData = fs.readFileSync('./basicData.json');
         basicData = rawBasicData ? JSON.parse(rawBasicData) : defaultBasicData;
-
+        basicData.presale_start_time = (new Date(basicData.presale_start_time)).getTime()
+        basicData.presale_end_time = (new Date(basicData.presale_end_time)).getTime()
     } catch (error) {
         console.log('error in reading database file', error)
     }
