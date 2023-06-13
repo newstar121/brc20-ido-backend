@@ -9,13 +9,16 @@ const ExtractJWT = passportJWT.ExtractJwt;
 const keys = require("./keys")
 const router = express.Router()
 const authRouter = express.Router()
+const adminRouter = express.Router()
 const jwt = require("jsonwebtoken")
 const dotenv = require('dotenv')
 const fs = require('fs');
-// const path = require('path')
+const bcrypt = require('bcryptjs')
+const path = require('path')
 dotenv.config()
 const presale_account_address = process.env.PRESALE_ACCOUNT_ADDRESS
-const PRESALE_TIME = process.env.PRESALE_TIME
+const username = process.env.USER_NAME;
+const password = process.env.PASSWORD;
 
 let database = [];
 let basicData;
@@ -29,13 +32,17 @@ app.use(passport.initialize());
 // app.get("/", (req, res) => {
 //     res.sendFile(path.join(__dirname, "build", "index.html"));
 // });
-// app.use(express.static("build"));
+app.use(express.static("build"));
 
 passport.use(new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
     secretOrKey: keys.secretOrKey
 }, (jwtPayload, cb) => {
-    return cb(null, jwtPayload.address)
+    if(jwtPayload.address) {
+        return cb(null, jwtPayload.address)
+    } else {
+        return cb(null, jwtPayload.username)
+    }
 }
 ));
 
@@ -66,7 +73,7 @@ router.get("/getAccountAddress", (req, res) => {
 
 router.get("/getPresaleTime", (req, res) => {
     let currentTs = (new Date()).getTime();
-    if (PRESALE_TIME <= currentTs) {
+    if (basicData.presale_end_time <= currentTs) {
         res.json({
             success: false,
             msg: 'Presale ended'
@@ -74,7 +81,8 @@ router.get("/getPresaleTime", (req, res) => {
     } else {
         res.json({
             success: true,
-            timestamp: (PRESALE_TIME - currentTs)
+            startTimeStamp: (basicData.presale_start_time - currentTs),
+            endTimeStamp: (basicData.presale_end_time - currentTs)
         });
     }
 });
@@ -92,6 +100,8 @@ router.get("/getData", (req, res) => {
             ratio: 0,
             max: 0,
             min: 0,
+            presale_start_time: (new Date()).getTime(),
+            presale_end_time: (new Date()).getTime()
         }
 
         database.forEach((item) => {
@@ -115,6 +125,9 @@ router.get("/getData", (req, res) => {
 
         data.max = basicData.max;
 
+        data.presale_start_time = basicData.presale_start_time;
+        data.presale_end_time = basicData.presale_end_time;
+
         res.json({
             success: true,
             data: data
@@ -125,6 +138,58 @@ router.get("/getData", (req, res) => {
             msg: 'Getting data failed'
         });
         console.log('getData error', error)
+    }
+});
+
+
+router.get("/login", (req, res) => {
+    let loginUsername = req.query.username;
+    let hashPassword = req.query.password;
+    // let myHashedPassword = bcrypt.hashSync(password, bcrypt.genSaltSync());
+    let doesPasswordMatch = bcrypt.compareSync(password, hashPassword)
+    try {
+        if (loginUsername === username && doesPasswordMatch) {
+            jwt.sign(
+                {
+                    username: loginUsername,
+                },
+                keys.secretOrKey,
+                { expiresIn: 600 * 1000 },
+                (err, token) => {
+                    if (err) {
+                        console.log('Admin User Login Error', err)
+                        res.status(201).json({
+                            success: false,
+                            msg: err
+                        });
+                    } else {
+
+                        res.json({
+                            success: true,
+                            token: 'Bearer ' + token,
+                            startDate: basicData.presale_start_time,
+                            endDate: basicData.presale_end_time,
+                            funds: basicData.funds,
+                            min: basicData.min,
+                            max: basicData.max,
+                            ratio: basicData.ratio,
+                            data: database
+                        });
+                    }
+                }
+            );
+        } else {
+            res.status(201).json({
+                success: false,
+                msg: 'Username or Password is incorrect.'
+            });
+        }
+    } catch (error) {
+        res.json({
+            success: false,
+            msg: 'Admin User Login failed'
+        });
+        console.log('Admin User Login error', error)
     }
 });
 
@@ -227,7 +292,95 @@ authRouter.post("/setTxid", (req, res) => {
     }
 })
 
+adminRouter.post("/save", (req, res) => {
+
+    basicData.presale_start_time = req.body.startDate;
+    basicData.presale_end_time = req.body.endDate;
+    basicData.funds = req.body.funds ? parseFloat(req.body.funds) : 0;
+    basicData.min = req.body.min ? parseFloat(req.body.min) : 0;
+    basicData.max = req.body.max ? parseFloat(req.body.max) : 0;
+    basicData.ratio = req.body.ratio;
+
+    try {
+        fs.writeFileSync('./basicData.json', JSON.stringify(basicData))
+        return res.json({
+            success: true,
+            msg: 'Success'
+        });
+    } catch (error) {
+        console.log('basicData files saving error', error)
+        return res.json({
+            success: false,
+            msg: 'Failed, Try again'
+        });
+    }
+})
+
+adminRouter.post("/add", (req, res) => {
+
+    const code = req.body.code || '';
+    const address = req.body.address || '';
+    const bitcoin = req.body.bitcoin ? parseFloat(req.body.bitcoin) : 0;
+    const brc20 = req.body.brc20 ? parseFloat(req.body.brc20) : 0;
+    const txid = req.body.txid || '';
+
+    let findIndex = database.findIndex((item) => item.address == address)
+    if (findIndex > -1) {
+        database[findIndex].code = code;
+        database[findIndex].bitcoin = bitcoin;
+        database[findIndex].brc20 = brc20;
+        database[findIndex].txid = txid;
+    } else {
+        database.push({
+            address: address,
+            code: code,
+            bitcoin: bitcoin,
+            brc20: brc20,
+            txid: txid
+        })
+    }
+
+    try {
+        fs.writeFileSync('./database.json', JSON.stringify(database))
+        return res.json({
+            success: true,
+            msg: 'Success'
+        });
+    } catch (error) {
+        console.log('database saving error', error)
+        return res.json({
+            success: false,
+            msg: 'Failed, Try again'
+        });
+    }
+})
+
+adminRouter.post("/delete", (req, res) => {
+
+    const address = req.body.address || '';
+    
+    let findIndex = database.findIndex((item) => item.address == address)
+    
+    if (findIndex > -1) {
+        database.splice(findIndex, 1);
+    } 
+    try {
+        fs.writeFileSync('./database.json', JSON.stringify(database))
+        return res.json({
+            success: true,
+            msg: 'Success'
+        });
+    } catch (error) {
+        console.log('database delete error', error)
+        return res.json({
+            success: false,
+            msg: 'Failed, Try again'
+        });
+    }
+})
+
 app.use("/api/auth", passport.authenticate('jwt', { session: false }), authRouter)
+app.use("/api/admin", passport.authenticate('jwt', { session: false }), adminRouter)
 app.use("/api", router)
 
 app.listen(port, () => {
