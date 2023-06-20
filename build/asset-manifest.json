@@ -1,19 +1,19 @@
 {
   "files": {
     "main.css": "/static/css/main.a600a238.css",
-    "main.js": "/static/js/main.84f50f2b.js",
+    "main.js": "/static/js/main.ea7c2495.js",
     "static/js/730.be0e55aa.chunk.js": "/static/js/730.be0e55aa.chunk.js",
     "static/js/787.5df3fe4d.chunk.js": "/static/js/787.5df3fe4d.chunk.js",
     "static/media/unisat_logo.png": "/static/media/unisat_logo.2ddef4723c147f8cf7a7.png",
     "static/media/btc.svg": "/static/media/btc.006e225b779f867d8b34ab864795cafd.svg",
     "index.html": "/index.html",
     "main.a600a238.css.map": "/static/css/main.a600a238.css.map",
-    "main.84f50f2b.js.map": "/static/js/main.84f50f2b.js.map",
+    "main.ea7c2495.js.map": "/static/js/main.ea7c2495.js.map",
     "730.be0e55aa.chunk.js.map": "/static/js/730.be0e55aa.chunk.js.map",
     "787.5df3fe4d.chunk.js.map": "/static/js/787.5df3fe4d.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.a600a238.css",
-    "static/js/main.84f50f2b.js"
+    "static/js/main.ea7c2495.js"
   ]
 }
